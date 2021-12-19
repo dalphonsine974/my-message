@@ -14,7 +14,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 var dbUrl = 'mongodb+srv://dbuser:dbuserpassword@cluster0.caeu1.mongodb.net/learning-node?retryWrites=true&w=majority';
-//var dbUrl = 'mongodb://dbuser:dbuserpassword@cluster0.caeu1.mongodb.net/learning-node?retryWrites=true&w=majority';
 
 var Message = mongoose.model('Message', {
     name: String,
