@@ -7,29 +7,48 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var mongoose = require('mongoose');
+
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-var messages = [
-    { name: 'Tom', message: 'Hello' },
-    { name: 'Tim', message: 'Howdy!' }
-];
+var dbUrl = 'mongodb+srv://dbuser:dbuserpassword@cluster0.caeu1.mongodb.net/learning-node?retryWrites=true&w=majority';
+//var dbUrl = 'mongodb://dbuser:dbuserpassword@cluster0.caeu1.mongodb.net/learning-node?retryWrites=true&w=majority';
+
+var Message = mongoose.model('Message', {
+    name: String,
+    message: String
+});
 
 app.get('/messages', (req, res) => {
-    res.send(messages);
+    Message.find({}, (err, messages) => {
+        res.send(messages);
+    });
+
 });
 
 app.post('/messages', (req, res) => {
-    messages.push(req.body);
-    io.emit('message', req.body);
-    res.sendStatus(200);
+    var message = new Message(req.body);
+
+    message.save((err) => {
+        if (err) {
+            res.sendStatus(500);
+        } else {
+            io.emit('message', req.body);
+            res.sendStatus(200);
+        }
+    });
+
 });
 
 io.on('connection', (socket) => {
     console.log('Incoming connection');
 });
 
+mongoose.connect(dbUrl, (error) => {
+    console.log('DB connected', error);
+});
 
 var server = http.listen(3000, () => {
     console.log('server listening on port', server.address().port);
